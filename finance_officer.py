@@ -18,25 +18,22 @@ abi, bytecode = compiled_code['aiucoin']['abi'], compiled_code['aiucoin']['bytec
 w3 = Web3(HTTPProvider('http://localhost:7545'))
 
 # Contract Address
-contract = dict()
-contract['contract_addr'] = '0x11d1457fC0D8245DF61839A6c26E27BCF76780b8'
-contract['sender'] = '0x3f356774Bf88b134De7cf66a30654007B4d2d9D3'
-contract['private_key'] = '2ea33b6dc55b2e999367a20e88c02d4862e1a3bd5230a7e7befa0e7cb2bc63d8'
-
-contract_addr = '0x11d1457fC0D8245DF61839A6c26E27BCF76780b8'
-sender, sender_private_key = '0x3f356774Bf88b134De7cf66a30654007B4d2d9D3', '2ea33b6dc55b2e999367a20e88c02d4862e1a3bd5230a7e7befa0e7cb2bc63d8'
-w3.eth.defaultAccount = sender
-asc = w3.eth.contract(address=contract_addr, abi=abi)
+contract = {
+    'contract_addr': '',
+    'sender': '',
+    'private_key': ''
+}
 
 def set_owner_default_acc():
     sender = str(input("Enter Account Address: ")).strip()
     sender_private_key = str(input("Enter Private key: ")).strip()
     contract['sender'], w3.eth.defaultAccount, contract['private_key'] = sender, sender, sender_private_key
-    print("Sender and Private key updated")
+    print("Sender and Private key updated\n")
 
 def set_contract_acc():
-    contract['contract_addr'] = str(input("Contract Address")).strip()
+    contract['contract_addr'] = str(input("Contract Address: ")).strip()
     asc = w3.eth.contract(address=contract['contract_addr'], abi=abi)
+    print("Contract address updated\n")
 
 def get_owner_account_address():
     print("Owner:", contract['sender'])
@@ -143,12 +140,7 @@ def display_eth_auc():
 def exit():
     print("Saiyonara!")
 
-# change_conversion_rate_wei_auc()
-# display_auc_eth()
-# register_student_account()
-# send_auc_student_acc()
-# get_student_balance_from_acc_eth()
-print("Starting AUC Management...")
+print("Starting AUC Management...\n")
 menu = {
     0: set_owner_default_acc,
     1: set_contract_acc,
@@ -167,13 +159,26 @@ menu = {
     14: display_eth_auc,
     15: exit
 }
-exit = False
+
 def display_menu():
-    print("\n", "="*10, "Menu", "="*10)
+    print("="*10, "Menu", "="*10)
     for key, val in menu.items():
         print(f"{key}: {val.__name__}")
     print("")
 
+def check_contract():
+    if contract['contract_addr'] or contract['sender'] or contract['private_key']:
+        print("Required information fulfilled!")
+    else:
+        print("Please enter the following detail first:")
+        menu[0]()
+        menu[1]()
+
+check_contract()
+asc = w3.eth.contract(address=contract['contract_addr'], abi=abi)
+w3.eth.defaultAccount = contract['sender']
+
+exit = False
 while not exit:
     display_menu()
     your_option = int(str(input("Your Pick: ")).strip())
@@ -182,5 +187,6 @@ while not exit:
     else:
         menu[15]()
         exit = True
+    print('')
     
 
