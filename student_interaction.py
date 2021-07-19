@@ -19,13 +19,13 @@ abi, bytecode = compiled_code['aiucoin']['abi'], compiled_code['aiucoin']['bytec
 w3 = Web3(HTTPProvider('http://localhost:7545'))
 
 contract = {
-    'contract_addr': '0x11d1457fC0D8245DF61839A6c26E27BCF76780b8',
-    'sender': '0x97Db06a476bc2Bd205Ade794203288d595A2DfFc',
-    'private_key': 'd5942584f70d37e292b0ed855160abc2157fc16b08d042c68a99c58bed37b2a5'
+    'contract_addr': '',
+    'sender': '',
+    'private_key': ''
 }
 
 def set_default_acc():
-    sender = str(input("Enter Account Address: ")).strip()
+    sender = Web3.toChecksumAddress(str(input("Enter Account Address: ")).strip())
     sender_private_key = str(input("Enter Private key: ")).strip()
     contract['sender'], w3.eth.defaultAccount, contract['private_key'] = sender, sender, sender_private_key
     print("Sender and Private key updated\n")
@@ -36,7 +36,7 @@ def set_contract_acc():
     print("Contract address updated\n")
 
 def get_account_address():
-    print("Owner:", contract['sender'])
+    print("Owner Acc:", contract['sender'])
 
 def get_account_balance_auc():
     balance = asc.functions.get_account_balance().call()
@@ -83,7 +83,7 @@ def send_auc_other_acc():
     signed_txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
     # Deposit to others
-    txn = asc.functions.deposit_aucs(recipient_addr).buildTransaction({
+    txn = asc.functions.deposit_aucs(Web3.toChecksumAddress(recipient_addr)).buildTransaction({
         'value': auc_to_wei,
         'gas': 100000,
         'gasPrice': w3.toWei('1', 'gwei'),

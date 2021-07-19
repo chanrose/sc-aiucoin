@@ -25,7 +25,7 @@ contract = {
 }
 
 def set_owner_default_acc():
-    sender = str(input("Enter Account Address: ")).strip()
+    sender = Web3.toChecksumAddress(str(input("Enter Account Address: ")).strip())
     sender_private_key = str(input("Enter Private key: ")).strip()
     contract['sender'], w3.eth.defaultAccount, contract['private_key'] = sender, sender, sender_private_key
     print("Sender and Private key updated\n")
@@ -42,7 +42,7 @@ def get_owner_account_address():
 def register_student_account():
     nonce = w3.eth.getTransactionCount(w3.eth.defaultAccount)
     id = int(str(input("Student ID: ")).strip())
-    acc_addr = str(input("Account Address: ")).strip()
+    acc_addr = Web3.toChecksumAddress(str(input("Account Address: ")).strip())
     txn = asc.functions.register_account(id, acc_addr).buildTransaction({
         'gas': 100000,
         'gasPrice': w3.toWei('1', 'gwei'),
@@ -60,11 +60,11 @@ def get_contract_balance_in_auc():
 
 def get_contract_balance_in_eth():
     balance_wei = asc.functions.get_total_weis().call()
-    print(f"ETH: {balance_wei * 10**18} units")
+    print(f"ETH: {balance_wei / 10**18} units")
 
 def send_auc_student_acc():
     nonce = w3.eth.getTransactionCount(w3.eth.defaultAccount)
-    recipient_addr = str(input("Account Address: ")).strip()
+    recipient_addr = Web3.toChecksumAddress(str(input("Account Address: ")).strip())
     auc_unit = int(input("AUC: "))
     auc_to_wei = asc.functions.convert_aucs_to_weis(auc_unit).call()
     txn = asc.functions.deposit_aucs(recipient_addr).buildTransaction({
@@ -79,7 +79,7 @@ def send_auc_student_acc():
 
 def deduct_auc_student_acc():
     nonce = w3.eth.getTransactionCount(w3.eth.defaultAccount)
-    recipient_addr = str(input("Account Address: ")).strip()
+    recipient_addr = Web3.toChecksumAddress(str(input("Account Address: ")).strip())
     auc_unit = int(input("AUC: "))
     txn = asc.functions.deduct_aucs(recipient_addr, auc_unit).buildTransaction({
         'gas': 100000,
@@ -87,7 +87,7 @@ def deduct_auc_student_acc():
         'nonce': nonce
     })
 
-    signed_txn = w3.eth.account.signTransaction(txn, private_key=sender_private_key)
+    signed_txn = w3.eth.account.signTransaction(txn, private_key=contract['private_key'])
     signed_txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     w3.eth.waitForTransactionReceipt(signed_txn_hash)
     print(f"Deduct {auc_unit} units from {recipient_addr}")
@@ -109,11 +109,19 @@ def get_student_balance_from_acc_eth():
     recipient_addr = str(input("Account Address: ")).strip()
     balance = asc.functions.get_student_account_balance(recipient_addr).call()
     balance = asc.functions.convert_aucs_to_weis(balance).call()
-    balance = balance * 10**18
+    balance = balance / 10**18
     print("ETH Balance:", balance, "units")
 
 def get_list_of_acc():
-    print(asc.functions.get_accounts_list().call())
+    acc_list = asc.functions.get_accounts_list().call()
+    index, stop, new_list = 0, False, []
+    while not stop:
+        if '00000000' not in acc_list[index]:
+            new_list.append(acc_list[index])
+            index += 1
+        else:
+            stop = True
+    print(f"student_acc[{len(new_list)}]:", new_list)
 
 def change_conversion_rate_wei_auc():
     nonce = w3.eth.getTransactionCount(w3.eth.defaultAccount)
@@ -181,7 +189,7 @@ w3.eth.defaultAccount = contract['sender']
 exit = False
 while not exit:
     display_menu()
-    your_option = int(str(input("Your Pick: ")).strip())
+    your_option = int(str(input("Your Option: ")).strip())
     if your_option >= 0 and your_option <= 14:
         menu[your_option]()
     else:
